@@ -37,7 +37,7 @@ default:
   image: python:3.15-slim
 
 .node:
-  image: node:24-alpine
+  image: node:26-alpine
 
 .rules-backend:
   rules:
