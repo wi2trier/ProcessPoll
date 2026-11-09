@@ -15,8 +15,8 @@ fails=0
 check() {
   if [ "$2" = "$3" ]; then echo "  ok   $1"; else echo "  FAIL $1 (expected '$2', got '$3')"; fails=$((fails+1)); fi
 }
-write_env() { printf 'IMAGE_PREFIX=reg.example.org/onkocase/pt\nIMAGE_TAG=%s\nHEALTH_TIMEOUT=4\n%s' "$1" "${2:-}" > .env; }
-reg() { echo "$3" > "$FAKE/registry/$(printf '%s' "reg.example.org/onkocase/pt/$1:$2" | tr '/:' '__')"; }
+write_env() { printf 'IMAGE_PREFIX=reg.example.org/example-org/pt\nIMAGE_TAG=%s\nHEALTH_TIMEOUT=4\n%s' "$1" "${2:-}" > .env; }
+reg() { echo "$3" > "$FAKE/registry/$(printf '%s' "reg.example.org/example-org/pt/$1:$2" | tr '/:' '__')"; }
 state() { echo "$FAKE/running/$1"; }
 run() { ./pull-and-restart.sh "$@" > "$W/out.txt" 2> "$W/err.txt"; echo $?; }
 show() { sed 's/^/      | /' "$W/out.txt" "$W/err.txt" | head -"${1:-12}"; }
@@ -40,7 +40,7 @@ reg backend 1.1.0 sha256:b110; reg proxy 1.1.0 sha256:p110
 rc=$(run --tag 1.1.0); show 8
 check "exit 0" 0 "$rc"
 check "backend running v1.1" sha256:b110 "$(cat "$(state backend)")"
-check ":previous = old backend" sha256:b100 "$(cat "$FAKE/images/reg.example.org_onkocase_pt_backend_previous")"
+check ":previous = old backend" sha256:b100 "$(cat "$FAKE/images/reg.example.org_example-org_pt_backend_previous")"
 check "pre-update backup ran for the first deployment and for this update" 2 "$(wc -l < "$FAKE/backup_calls.log" | tr -d ' ')"
 check ".env IMAGE_TAG=1.1.0" "IMAGE_TAG=1.1.0" "$(grep ^IMAGE_TAG= .env)"
 
@@ -90,7 +90,7 @@ fi
 rm .env; rc=$(run); check "missing .env exit 4" 4 "$rc"
 
 echo "== 9. .env parsing (CRLF, quotes, trailing comment)"
-printf 'IMAGE_PREFIX="reg.example.org/onkocase/pt"\r\nIMAGE_TAG=1.1.0 # pinned\r\nHEALTH_TIMEOUT=4\r\n' > .env
+printf 'IMAGE_PREFIX="reg.example.org/example-org/pt"\r\nIMAGE_TAG=1.1.0 # pinned\r\nHEALTH_TIMEOUT=4\r\n' > .env
 rc=$(run); show 6; check "pull+noop exit 0 with CRLF/quotes/comment" 0 "$rc"
 
 echo "== 10. pull failure"

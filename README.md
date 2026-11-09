@@ -34,3 +34,7 @@ The app will be available at <http://localhost:8080>. The production Compose fil
 ## License
 
 ProcessPoll is licensed under the MIT License; see [LICENSE](LICENSE).
+
+## Disclaimer
+
+The software is provided “as is” under the MIT License, which contains the warranty and liability terms for the software. Anyone who uses or hosts it is responsible for reviewing, configuring, securing, maintaining and monitoring their own installation, including backups, data handling and any legal obligations that apply to their use. This repository does not provide a hosted service or operational support.
