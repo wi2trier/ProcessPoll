@@ -53,7 +53,7 @@ export function newQuestion(type: QuestionType, prompt = ''): BuilderQuestion {
   };
 }
 
-export type Translate = (key: string, opts?: Record<string, unknown>) => string;
+export type Translate = (key: string) => string;
 
 export function morningDescription(t: Translate): string {
   return t('templates.morning.description');

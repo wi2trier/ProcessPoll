@@ -1,8 +1,7 @@
 @import '@fontsource-variable/figtree/index.css';
 @import '@fontsource-variable/plus-jakarta-sans/index.css';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 :root {
   --ink: #162d33;
@@ -47,12 +46,13 @@
   }
 }
 
+@utility btn {
+  @apply inline-flex min-h-[48px] select-none items-center justify-center gap-2 rounded-xl px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40;
+}
+
 @layer components {
   .display {
     @apply font-display text-display;
-  }
-  .btn {
-    @apply inline-flex min-h-[48px] select-none items-center justify-center gap-2 rounded-xl px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-primary {
     @apply btn bg-brand text-white hover:bg-brand-hover;

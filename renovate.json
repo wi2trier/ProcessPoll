@@ -35,6 +35,11 @@
       "allowedVersions": "/^\\d*[02468](\\.|-|$)/"
     },
     {
+      "description": "Keep TypeScript within the range supported by typescript-eslint",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<6.1.0"
+    },
+    {
       "description": "Require manual review before a PostgreSQL major-version upgrade",
       "matchPackageNames": ["postgres"],
       "matchUpdateTypes": ["major"],
