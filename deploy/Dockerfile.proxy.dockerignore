@@ -1,0 +1,11 @@
+**
+!frontend/
+!deploy/Caddyfile
+
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/coverage
+frontend/playwright-report
+frontend/test-results
+frontend/.env*

@@ -1,0 +1,43 @@
+services:
+  proxy:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.proxy
+    environment:
+      SITE_ADDRESS: ":80"
+    ports: !override
+      - "127.0.0.1:8080:80"
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    read_only: false
+    environment:
+      PROCESSPOLL_ENV: dev
+      PROCESSPOLL_RUN_MIGRATIONS: "true"
+      PYTHONPATH: /src/backend
+    command:
+      - uvicorn
+      - app.main:app
+      - --host=0.0.0.0
+      - --port=8000
+      - --reload
+      - --reload-dir=/src/backend/app
+    working_dir: /app
+    volumes:
+
+      - ../backend:/src/backend
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  backup:
+    profiles: ["backup"]
+
+networks:
+  internal:
+    internal: false

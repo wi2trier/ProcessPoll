@@ -1,0 +1,9 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+  proxy:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.proxy

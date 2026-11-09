@@ -1,0 +1,9 @@
+[Unit]
+Description=ProcessPoll: copy database dumps off-host
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=processpoll
+ExecStart=/usr/bin/rsync -a --delete-after /opt/processpoll/deploy/backups/ backup@backup-host.example.org:/srv/processpoll-backups/

@@ -1,0 +1,30 @@
+# Normalise line endings: LF in the repository, LF for everything that runs in
+# containers or on Linux hosts (shell scripts, Dockerfiles, Caddyfile, YAML).
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.bash text eol=lf
+Dockerfile* text eol=lf
+*.dockerignore text eol=lf
+Caddyfile text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.service text eol=lf
+*.timer text eol=lf
+
+# Windows-only scripts keep CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf  binary
+*.dump binary

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", "group:allNonMajor"],
+  "timezone": "Europe/Berlin",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "enabledManagers": ["npm", "pep621", "dockerfile", "docker-compose", "gitlabci", "pip_requirements"],
+  "packageRules": [
+    {
+      "description": "Keep the Playwright CI image (literal tag in .gitlab-ci.yml, job e2e) in sync with @playwright/test; deploy/ci/check-yaml.py fails the pipeline when they differ",
+      "matchPackageNames": ["@playwright/test", "mcr.microsoft.com/playwright"],
+      "groupName": "playwright"
+    },
+    {
+      "description": "docker:NN (CLI image) and docker:NN-dind (daemon) must move together",
+      "matchPackageNames": ["docker"],
+      "groupName": "docker-in-docker"
+    },
+    {
+      "description": "Major updates are never grouped and need a manual look",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "A new Python minor version (3.12 -> 3.13) is a deliberate decision: scipy/asyncpg wheels, backend/pyproject.toml, Dockerfile.backend and CI move together",
+      "matchPackageNames": ["python"],
+      "matchUpdateTypes": ["minor"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Only LTS (even) Node.js majors",
+      "matchPackageNames": ["node"],
+      "matchDatasources": ["docker"],
+      "allowedVersions": "/^\\d*[02468](\\.|-|$)/"
+    },
+    {
+      "description": "Require manual review before a PostgreSQL major-version upgrade",
+      "matchPackageNames": ["postgres"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

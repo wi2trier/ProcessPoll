@@ -1,0 +1,54 @@
+ARG PYTHON_VERSION=3.12
+
+FROM python:${PYTHON_VERSION}-slim AS builder
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+
+COPY backend/ /build/backend/
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip \
+ && pip install /build/backend
+
+FROM python:${PYTHON_VERSION}-slim AS runtime
+
+ARG VERSION=dev
+ARG REVISION=unknown
+LABEL org.opencontainers.image.title="ProcessPoll backend" \
+      org.opencontainers.image.description="Live process trace polling - API server" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}"
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:${PATH}" \
+    PROCESSPOLL_ENV=prod
+
+RUN groupadd --system --gid 10001 processpoll \
+ && useradd  --system --uid 10001 --gid processpoll \
+             --home-dir /app --shell /usr/sbin/nologin processpoll
+
+COPY --from=builder /opt/venv /opt/venv
+
+WORKDIR /app
+
+COPY backend/alembic.ini /app/alembic.ini
+COPY backend/alembic /app/alembic
+COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod 0755 /usr/local/bin/entrypoint.sh \
+ && chown -R processpoll:processpoll /app
+
+USER processpoll
+EXPOSE 8000
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
+  CMD ["python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4).status == 200 else 1)"]
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-access-log", "--timeout-graceful-shutdown", "5"]

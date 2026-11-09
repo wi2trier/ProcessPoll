@@ -1,0 +1,66 @@
+# --- secrets / local config -------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+deploy/.deploy/
+deploy/.deploy.lock
+deploy/backups/
+backups/
+# operator-specific Caddy snippets and TLS certificates/keys (only the placeholder is tracked)
+deploy/caddy.d/*
+!deploy/caddy.d/.gitkeep
+
+# --- python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+.hypothesis/
+.coverage
+coverage.xml
+htmlcov/
+build/
+dist-python/
+*.db
+*.sqlite
+*.sqlite3
+
+# --- node / frontend ---------------------------------------------------------
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
+*.tsbuildinfo
+npm-debug.log*
+
+# --- CI ----------------------------------------------------------------------
+.cache/
+report.xml
+*.log
+
+# --- load tests --------------------------------------------------------------
+loadtest/.venv/
+loadtest/results/
+loadtest/*.csv
+loadtest/.last-session.json
+
+# --- editors / OS ------------------------------------------------------------
+.claude/settings.local.json
+.claude/worktrees/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+.DS_Store
+Thumbs.db

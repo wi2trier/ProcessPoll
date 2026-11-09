@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+
+
+
+
+
+set -u
+FAKE="${FAKE:?}"
+mkdir -p "$FAKE"/{running,images,registry,health,badimg}
+echo "docker $*" >> "$FAKE/calls.log"
+
+prefix() { grep -E '^IMAGE_PREFIX=' .env | cut -d= -f2- | tr -d '\r"'; }
+default_tag() { grep -E '^IMAGE_TAG=' .env | cut -d= -f2- | tr -d '\r' | sed 's/[[:space:]]#.*//'; }
+key() { printf '%s' "$1" | tr '/:' '__'; }
+
+case "${1:-}" in
+  compose)
+    shift
+    [ "${1:-}" = "version" ] && { echo "Docker Compose version v2.29.0"; exit 0; }
+    [ "${1:-}" = "-f" ] && shift 2
+    sub="$1"; shift
+    case "$sub" in
+      ps)
+        svc="${*: -1}"
+        [ -f "$FAKE/running/$svc" ] && echo "cid_$svc"
+        exit 0 ;;
+      pull)
+        [ "${FAKE_PULL_FAIL:-0}" = "1" ] && { echo "pull failed" >&2; exit 1; }
+        for a in "$@"; do
+          case "$a" in -*) continue ;; esac
+          ref="$(prefix)/$a:${IMAGE_TAG:-$(default_tag)}"
+          [ -f "$FAKE/registry/$(key "$ref")" ] || { echo "manifest unknown: $ref" >&2; exit 1; }
+          cp "$FAKE/registry/$(key "$ref")" "$FAKE/images/$(key "$ref")"
+        done
+        exit 0 ;;
+      up)
+        tag="${IMAGE_TAG:-$(default_tag)}"
+        for svc in backend proxy; do
+          ref="$(prefix)/$svc:$tag"
+          [ -f "$FAKE/images/$(key "$ref")" ] || { echo "no such image $ref" >&2; exit 1; }
+          id="$(cat "$FAKE/images/$(key "$ref")")"
+          echo "$id" > "$FAKE/running/$svc"
+          if [ -f "$FAKE/badimg/$id" ]; then echo unhealthy > "$FAKE/health/$svc"; else echo healthy > "$FAKE/health/$svc"; fi
+        done
+        echo "$tag" > "$FAKE/running_tag"
+        [ -f "$FAKE/running/postgres" ] || { echo "sha256:pg" > "$FAKE/running/postgres"; echo healthy > "$FAKE/health/postgres"; }
+        [ -f "$FAKE/badimg/$(cat "$FAKE/running/backend")" ] && exit 1
+        exit 0 ;;
+      logs) echo "fake log line"; exit 0 ;;
+      exec) echo "backup exec: $*" >> "$FAKE/backup_calls.log"; [ "${FAKE_BACKUP_FAIL:-0}" = "1" ] && exit 1; exit 0 ;;
+    esac ;;
+  inspect)
+    fmt="$3"; cid="$4"; svc="${cid#cid_}"
+    case "$fmt" in
+      *State.Health*) cat "$FAKE/health/$svc" ;;
+      *.Image*) cat "$FAKE/running/$svc" ;;
+    esac
+    exit 0 ;;
+  image)
+    case "$2" in
+      inspect) ref="${@: -1}"; [ -f "$FAKE/images/$(key "$ref")" ] || exit 1; cat "$FAKE/images/$(key "$ref")"; exit 0 ;;
+      prune) exit 0 ;;
+    esac ;;
+  tag) echo "$2" > "$FAKE/images/$(key "$3")"; exit 0 ;;
+  login) cat > "$FAKE/login_stdin"; echo "login ok (token length $(wc -c < "$FAKE/login_stdin"))" >> "$FAKE/calls.log"; exit 0 ;;
+esac
+echo "fake docker: unhandled: $*" >&2
+exit 99

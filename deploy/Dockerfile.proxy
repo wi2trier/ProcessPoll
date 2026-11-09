@@ -1,0 +1,32 @@
+ARG NODE_VERSION=24
+ARG CADDY_VERSION=2
+
+FROM node:${NODE_VERSION}-alpine AS frontend
+
+WORKDIR /src
+COPY frontend/package.json frontend/package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --no-audit --no-fund
+
+COPY frontend/ ./
+RUN npm run build
+
+FROM caddy:${CADDY_VERSION}-alpine AS runtime
+
+ARG VERSION=dev
+ARG REVISION=unknown
+LABEL org.opencontainers.image.title="ProcessPoll proxy" \
+      org.opencontainers.image.description="Caddy reverse proxy + static frontend for ProcessPoll" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}"
+
+ENV SITE_ADDRESS=":80" \
+    BACKEND_UPSTREAM="backend:8000"
+
+COPY deploy/Caddyfile /etc/caddy/Caddyfile
+COPY --from=frontend /src/dist /srv
+
+RUN caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+EXPOSE 80 443 443/udp

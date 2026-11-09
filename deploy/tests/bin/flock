@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+[ -f "${FAKE:?}/lock_held" ] && exit 1
+exit 0
